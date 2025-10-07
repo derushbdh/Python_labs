@@ -63,9 +63,10 @@ def process_all_files():
     print("="*60 + "\n")
     
     files = [f'data_{i}.csv' for i in range(1, 6)]
-    
+
+    all_medians = []
     with ThreadPoolExecutor(max_workers=5) as executor:
-        results = executor.map(process_file, files)
+        results = list(executor.map(process_file, files))
     
     for filename, file_results in results:
         print(f"{filename}:")
@@ -74,8 +75,20 @@ def process_all_files():
             median = file_results[category]['median']
             std_dev = file_results[category]['std_dev']
             print(f"  {category}, медиана: {median}, отклонение: {std_dev}")
+            all_medians.append(median)
         
         print()
+    
+    if all_medians:
+        median_of_medians = statistics.median(all_medians)
+        if len(all_medians) > 1:
+            std_dev_of_medians = statistics.stdev(all_medians)
+        else:
+            std_dev_of_medians = 0.0
+        print("="*60)
+        print(f"Медиана медиан: {round(median_of_medians, 2)}")
+        print(f"Отклонение медиан: {round(std_dev_of_medians, 2)}")
+        print("="*60)
 
 def main():
     generate_csv_files()
